@@ -30,8 +30,6 @@ name: $(Date:yyyy).$(Date:MM).$(Date:dd).$(Rev:r)
 stages:
   - stage: Build
     displayName: Build image
-    variables:
-      - template: variables/build.yml
 
     jobs:
       - job: BuildImage
