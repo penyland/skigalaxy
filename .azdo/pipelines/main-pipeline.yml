@@ -44,7 +44,7 @@ stages:
             displayName: dotnet build $(buildConfiguration)
             inputs:
               command: "build"
-              projects: "**/src/*.csproj"
+              projects: "src/**/*.csproj"
               arguments: "--configuration $(buildConfiguration)"
 
           - task: DotNetCoreCLI@2
@@ -52,7 +52,7 @@ stages:
             inputs:
               command: "test"
               testRunTitle: $(Build.BuildNumber)
-              projects: "**/Tests/*.csproj"
+              projects: "Tests/**/*.csproj"
               arguments: --configuration $(buildConfiguration)
 
           - task: Docker@2
