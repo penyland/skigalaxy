@@ -20,7 +20,7 @@ variables:
   imageRepository: "skigalaxy/skipassvalidator"
   ACR_SERVICE_CONNECTION: "ACR Penyland"
   AZURE_SERVICE_CONNECTION: "Azure"
-  tags: "\"$(Build.BuildNumber);latest\""
+  tags: \"$(Build.BuildNumber);latest\"
 
 # build run name
 name: $(Date:yyyy).$(Date:MM).$(Date:dd).$(Rev:r)
