@@ -1,0 +1,99 @@
+# main-pipeline.yml
+# This is the pipeline for building and deploying the application to Development, Test and Reference
+
+trigger:
+  batch: true
+  branches:
+    include:
+      - main
+  paths:
+    exclude:
+      - .azuredevops
+      - docs
+      - scripts
+
+pool:
+  vmImage: "ubuntu-latest"
+
+variables:
+  buildConfiguration: "Release"
+  imageRepository: "skigalaxy-skipassvalidator-api"
+  ACR_NAMESPACE: "penyland.azurecr.io"
+  ACR_SERVICE_CONNECTION: "ACR Penyland"
+  AZURE_SERVICE_CONNECTION: "Azure"
+  tags: '"\""$(Build.BuildNumber);latest"\""'
+  versionPrefix: $(Build.BuildNumber)
+  WebAppName: "skipassvalidator-api"
+
+# build run name
+name: $(Date:yyyy).$(Date:MM).$(Date:dd).$(Rev:r)
+
+stages:
+  - stage: Build
+    displayName: Build image
+
+    jobs:
+      - job: BuildImage
+        displayName: Build, test and push image
+        steps:
+          - task: UseDotNet@2
+            displayName: "Use .NET 8 SDK"
+            inputs:
+              packageType: sdk
+              version: 8.x
+
+          - task: DotNetCoreCLI@2
+            displayName: dotnet build $(buildConfiguration)
+            inputs:
+              command: "build"
+              projects: "src/**/*.csproj"
+              arguments: "--configuration $(buildConfiguration)"
+
+          - task: DotNetCoreCLI@2
+            displayName: "dotnet test"
+            inputs:
+              command: "test"
+              testRunTitle: $(Build.BuildNumber)
+              projects: "Tests/**/*.csproj"
+              arguments: --configuration $(buildConfiguration)
+
+          - task: Docker@2
+            displayName: Login to ACR
+            inputs:
+              command: login
+              containerRegistry: $(ACR_SERVICE_CONNECTION)
+
+          - task: DotNetCoreCLI@2
+            displayName: Build docker image
+            inputs:
+              command: "publish"
+              publishWebProjects: false
+              projects: src/**/SkiGalaxy.SkiPassValidator.Api.csproj
+              arguments: >-
+                -c $(buildConfiguration)
+                -r linux-x64
+                -p:PublishProfile=DefaultContainer
+                -p:ContainerRegistry=$(ACR_NAMESPACE)
+                -p:ContainerRepository=$(imageRepository)
+                -p:ContainerImageTags=$(tags)
+                -p:VersionPrefix=$(versionPrefix)
+
+  - stage: Deploy
+    dependsOn: Build
+    displayName: Deploy image
+    jobs:
+      - job: DeployImage
+        displayName: Deploy image
+        pool:
+          vmImage: "ubuntu-latest"
+        steps:
+          - task: AzureRmWebAppDeployment@4
+            displayName: "Azure App Service Deploy: SkiPassValidator"
+            inputs:
+              connectionType: "AzureRM"
+              azureSubscription: $(AZURE_SERVICE_CONNECTION)
+              appType: "webAppContainer"
+              WebAppName: $(WebAppName)
+              DockerNamespace: $(ACR_NAMESPACE)
+              DockerRepository: $(imageRepository)
+              DockerImageTag: $(Build.BuildNumber)
