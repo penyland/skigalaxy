@@ -18,9 +18,6 @@ pool:
 variables:
   buildConfiguration: "Release"
   imageRepository: "skigalaxy/skipassvalidator"
-  runtime: "linux-x64"
-  versionPrefix: "1.0.0"
-  versionSuffix: "$(Rev:r)"
   ACR_SERVICE_CONNECTION: "ACR Penyland"
   AZURE_SERVICE_CONNECTION: "Azure"
 
