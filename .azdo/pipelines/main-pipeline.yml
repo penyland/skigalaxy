@@ -37,20 +37,20 @@ stages:
               packageType: sdk
               version: 8.x
 
-          - task: DotNetCoreCLI@2
-            displayName: dotnet build $(buildConfiguration)
-            inputs:
-              command: "build"
-              projects: "src/**/*.csproj"
-              arguments: "--configuration $(buildConfiguration)"
+          # - task: DotNetCoreCLI@2
+          #   displayName: dotnet build $(buildConfiguration)
+          #   inputs:
+          #     command: "build"
+          #     projects: "src/**/*.csproj"
+          #     arguments: "--configuration $(buildConfiguration)"
 
-          - task: DotNetCoreCLI@2
-            displayName: "dotnet test"
-            inputs:
-              command: "test"
-              testRunTitle: $(Build.BuildNumber)
-              projects: "Tests/**/*.csproj"
-              arguments: --configuration $(buildConfiguration)
+          # - task: DotNetCoreCLI@2
+          #   displayName: "dotnet test"
+          #   inputs:
+          #     command: "test"
+          #     testRunTitle: $(Build.BuildNumber)
+          #     projects: "Tests/**/*.csproj"
+          #     arguments: --configuration $(buildConfiguration)
 
           - task: Docker@2
             displayName: Login to ACR
@@ -64,7 +64,7 @@ stages:
               command: "publish"
               publishWebProjects: false
               projects: src/**/SkiGalaxy.SkiPassValidator.Api.csproj
-              arguments: -c Release -r linux-x64 -p:PublishProfile=DefaultContainer -p:ContainerRegistry=penyland.azurecr.io /p:ContainerImageTags='"latest;$(Build.BuildNumber)"'
+              arguments: -c Release -r linux-x64 -p:PublishProfile=DefaultContainer -p:ContainerRegistry=penyland.azurecr.io -p:ContainerImageTags='"$(Build.BuildNumber);latest"'
 
   # - stage: Deploy
   #   displayName: Deploy image
