@@ -64,7 +64,7 @@ stages:
               command: "publish"
               publishWebProjects: false
               projects: src/**/SkiGalaxy.SkiPassValidator.Api.csproj
-              arguments: "-c Release -r linux-x64 -p:PublishProfile=DefaultContainer -p:ContainerRegistry=penyland.azurecr.io -p:ContainerRepository=skigalaxy/skipassvalidator /p:ContainerImageTags=latest;$(Build.BuildId)"
+              arguments: "-c Release -r linux-x64 -p:PublishProfile=DefaultContainer -p:ContainerRegistry=penyland.azurecr.io /p:ContainerImageTags=latest;$(Build.BuildId)"
 
   # - stage: Deploy
   #   displayName: Deploy image
