@@ -23,7 +23,9 @@ variables:
   AZURE_SERVICE_CONNECTION: "Azure"
   tags: '"\""$(Build.BuildNumber);latest"\""'
   versionPrefix: $(Build.BuildNumber)
-  WebAppName: "skipassvalidator-api"
+  webAppName: "skipassvalidator-api"
+  containerAppName: "aca-skipassvalidator"
+  resourceGroup: "SkiPassValidator"
 
 # build run name
 name: $(Date:yyyy).$(Date:MM).$(Date:dd).$(Rev:r)
@@ -80,7 +82,7 @@ stages:
 
   - stage: Deploy
     dependsOn: Build
-    displayName: Deploy image
+    displayName: Deploy image to Azure App Service
     jobs:
       - job: DeployImage
         displayName: Deploy image
@@ -93,7 +95,24 @@ stages:
               connectionType: "AzureRM"
               azureSubscription: $(AZURE_SERVICE_CONNECTION)
               appType: "webAppContainer"
-              WebAppName: $(WebAppName)
+              WebAppName: $(webAppName)
               DockerNamespace: $(ACR_NAMESPACE)
               DockerRepository: $(imageRepository)
               DockerImageTag: $(Build.BuildNumber)
+
+  - stage: DeployToACA
+    dependsOn: Build
+    displayName: Deploy image to Azure Container App
+    jobs:
+      - job: DeployImage
+        displayName: Deploy image
+        pool:
+          vmImage: "ubuntu-latest"
+        steps:
+          - task: AzureContainerApps@1
+            displayName: "Azure Container App deploy: SkiPassValidator"
+            inputs:
+              azureSubscription: $(ACR_SERVICE_CONNECTION)
+              containerAppName: $(containerAppName)
+              resourceGroup: $(resourceGroup)
+              imageToDeploy: $(ACR_NAMESPACE)/$(imageRepository):$(Build.BuildNumber)
